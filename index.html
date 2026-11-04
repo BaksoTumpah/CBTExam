@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Ruang Ujian CBT</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: dashboard siswa (daftar ujian + profil) lalu ruang ujian layar penuh (kartu soal + panel nomor). Aksen biru-hijau tua, merah hanya untuk pelanggaran. */
@@ -26,6 +25,7 @@
   --danger:#FF8A80; --danger-bg:#3A1B19; --ok:#5CCB8B; --ok-bg:#123225; --warn:#F2B35A; --warn-bg:#3A2A10; color-scheme:dark}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   padding-block:0 32px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -125,10 +125,6 @@ dl.kv dd{margin:0;text-align:right;font-weight:500}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;border:1.5px solid var(--line);vertical-align:-1px}
 .confirm{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:12px;font-size:14px;display:grid;gap:10px}
 .confirm .grp{display:flex;gap:8px;flex-wrap:wrap}
-details.sim{font-size:13px;color:var(--muted)}
-details.sim summary{cursor:pointer;font-weight:500}
-details.sim .grp{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-details.sim button{padding:6px 10px;min-height:36px;font-size:12px}
 body.obscured .exam,body.obscured .top{filter:blur(18px);pointer-events:none}
 .mark-wm{position:fixed;inset:0;z-index:5;pointer-events:none}
 
@@ -180,11 +176,25 @@ html{color-scheme:light}
 
 <div id="wm" class="mark-wm" hidden></div>
 
+<!-- ============ LOGIN ============ -->
+<section id="s-login" hidden>
+  <div class="wrap" style="max-width:420px;padding-top:12vh">
+    <div class="brand" style="margin-bottom:20px"><div class="mark">R</div><div><b>Ruang Ujian CBT</b><span id="lSchool"></span></div></div>
+    <form class="card" id="f-login" autocomplete="off">
+      <h1 style="font-size:26px;margin-bottom:14px">Masuk peserta</h1>
+      <div class="field"><label class="label" for="in-nis">NIS</label><input id="in-nis" inputmode="numeric" required></div>
+      <div class="field"><label class="label" for="in-pass">Kata sandi</label><input id="in-pass" type="password" required></div>
+      <p id="lErr" class="err" role="alert"></p>
+      <button class="btn primary" type="submit" style="width:100%">Masuk</button>
+    </form>
+  </div>
+</section>
+
 <!-- ============ DASHBOARD ============ -->
 <section id="s-dash">
   <header class="top"><div class="row">
     <div class="brand"><div class="mark">R</div><div><b>Ruang Ujian CBT</b><span id="dSchool"></span></div></div>
-    <div class="chips"><span class="chip" id="dDate"></span><span class="chip"><span class="avatar" id="dAv"></span><span id="dUser"></span></span></div>
+    <div class="chips"><span class="chip" id="dDate"></span><span class="chip"><span class="avatar" id="dAv"></span><span id="dUser"></span></span><button class="btn" id="bLogout" type="button" style="min-height:34px;padding:4px 12px">Keluar</button></div>
   </div></header>
   <div class="wrap dash">
     <main>
@@ -205,7 +215,7 @@ html{color-scheme:light}
         <span class="label">Sebelum mulai</span>
         <ul class="tips"><li>Tutup aplikasi lain dan matikan alat mengambang.</li><li>Gunakan perangkat dengan baterai cukup.</li><li>Pelanggaran ke-3 memblokir akses ujian.</li></ul>
       </div>
-      <button class="linkbtn" id="bReset" type="button">Reset data demo</button>
+      
     </aside>
   </div>
 </section>
@@ -247,18 +257,7 @@ html{color-scheme:light}
           <div class="grp"><button class="btn danger" id="bYes" type="button">Ya, kumpulkan</button><button class="btn" id="bNo" type="button">Kembali</button></div>
         </div>
       </div>
-      <details class="card sim">
-        <summary>Uji deteksi (khusus demo)</summary>
-        <p style="margin:8px 0 0">Pelanggaran asli juga bekerja: tekan Esc, ganti tab, atau tekan Print Screen.</p>
-        <div class="grp">
-          <button class="btn" data-sim="tab" type="button">Pindah tab</button>
-          <button class="btn" data-sim="blur" type="button">Aplikasi mengambang</button>
-          <button class="btn" data-sim="shot" type="button">Screenshot</button>
-          <button class="btn" data-sim="fs" type="button">Keluar layar penuh</button>
-          <button class="btn" data-sim="close" type="button">Tutup browser</button>
-        </div>
-      </details>
-    </aside>
+          </aside>
   </div>
 </section>
 
@@ -282,7 +281,7 @@ html{color-scheme:light}
     <span class="label" id="stCode"></span>
     <h2 id="stTitle" style="margin-top:4px"></h2>
     <dl class="meta-s" id="stMeta"></dl>
-    <div class="field"><label class="label" for="in-tok">Token ujian</label><input id="in-tok" class="tok" type="text" maxlength="20" value="UJIAN-2026"><span class="hint">Token demo sudah terisi.</span></div>
+    <div class="field"><label class="label" for="in-tok">Token ujian</label><input id="in-tok" class="tok" type="text" maxlength="20" autocomplete="off"><span class="hint">Token dibagikan pengawas ruang.</span></div>
     <p id="stNote" class="notice" hidden>Sesi ujian sebelumnya terputus. Saat masuk lagi, kejadian ini dicatat sebagai satu pelanggaran.</p>
     <ul class="watch">
       <li>Layar masuk mode penuh otomatis.</li>
@@ -320,8 +319,7 @@ html{color-scheme:light}
       <button class="btn primary" type="submit">Buka blokir</button>
       <button class="btn" type="button" id="bUnlockClose" hidden>Tutup</button>
     </form>
-    <p class="hint">Demo: kode pengawas <span class="mono">PENGAWAS-123</span></p>
-    <p id="unlockErr" class="err" style="margin:8px 0 0" role="alert"></p>
+        <p id="unlockErr" class="err" style="margin:8px 0 0" role="alert"></p>
   </div>
 </div>
 
@@ -330,7 +328,13 @@ html{color-scheme:light}
 <script>
 (function(){
   var CFG={max:3,token:'UJIAN-2026',unlock:'PENGAWAS-123',debounce:1500,low:300};
-  var USER={name:'Aulia Rahman',nis:'2410123',kelas:'XI IPA 2',sekolah:'SMA Negeri Contoh'};
+  var SEKOLAH='SMA Negeri Contoh';
+  /* Daftar peserta: ubah sesuai kelas Anda (NIS, sandi, nama, kelas) */
+  var PESERTA=[
+    {nis:'2410123',pass:'siswa123',name:'Aulia Rahman',kelas:'XI IPA 2'},
+    {nis:'2410124',pass:'siswa124',name:'Bima Pratama',kelas:'XI IPA 2'}
+  ];
+  var USER=null;
   var EXAMS=[
     {id:'mtk',code:'MTK-PTS-01',mapel:'Matematika Wajib',jenis:'Penilaian Tengah Semester',guru:'Bu Ratna, S.Pd.',jadwal:'Hari ini, 08.00 - 10.00',dur:20,open:true,q:[
       {q:'Hasil dari 3/4 + 5/8 adalah ...',o:['8/12','11/8','15/32','9/8','1'],a:1},
@@ -367,18 +371,19 @@ html{color-scheme:light}
     copy:{w:0,title:'Salin, tempel, dan klik kanan dinonaktifkan selama ujian'},
     unlock:{w:0,title:'Blokir dibuka pengawas'}
   };
-  var KEY='cbt-ruang-ujian-v2',memDB=null;
+  var memDB={};
   var $=function(id){return document.getElementById(id)};
   var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
   var L='ABCDE';
-  var DB=loadDB(),cur=null,S=null,R={paused:false,last:0,base:null,fsOK:true},pendingId=null;
+  var DB={ex:{}},cur=null,S=null,R={paused:false,last:0,base:null,fsOK:true},pendingId=null;
 
-  function loadDB(){try{var r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}catch(e){}return memDB||{ex:{}}}
-  function saveDB(){memDB=DB;try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}}
+  function dbKey(){return 'cbt-v3-'+USER.nis}
+  function loadDB(){try{var r=localStorage.getItem(dbKey());if(r)return JSON.parse(r)}catch(e){}return memDB[dbKey()]||{ex:{}}}
+  function saveDB(){if(!USER)return;memDB[dbKey()]=DB;try{localStorage.setItem(dbKey(),JSON.stringify(DB))}catch(e){}}
   function byId(id){for(var i=0;i<EXAMS.length;i++)if(EXAMS[i].id===id)return EXAMS[i]}
   function stateOf(id){if(!DB.ex[id])DB.ex[id]={status:'new',answers:{},flags:{},log:[],count:0,remaining:0,idx:0,score:null};return DB.ex[id]}
   function running(){return !!(cur&&S&&S.status==='running')}
-  function show(id){['s-dash','s-exam','s-result'].forEach(function(x){$(x).hidden=(x!==id)});window.scrollTo(0,0)}
+  function show(id){['s-login','s-dash','s-exam','s-result'].forEach(function(x){$(x).hidden=(x!==id)});window.scrollTo(0,0)}
   function toast(t){var el=$('toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){el.hidden=true},2600)}
   function clock(ts){var d=new Date(ts);return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+':'+('0'+d.getSeconds()).slice(-2)}
   function initials(n){return n.split(' ').slice(0,2).map(function(w){return w.charAt(0)}).join('').toUpperCase()}
@@ -405,7 +410,6 @@ html{color-scheme:light}
     var id=b.dataset.id,act=b.dataset.act;
     if(act==='start')openStart(id);else if(act==='unlock')openBlocked(id);else showResult(id);
   });
-  $('bReset').addEventListener('click',function(){DB={ex:{}};saveDB();renderDash();toast('Data demo direset.')});
   function paintDate(){
     try{$('dDate').textContent=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch(e){$('dDate').textContent=''}
   }
@@ -540,7 +544,8 @@ html{color-scheme:light}
     if(!R.paused&&!document.hasFocus())violation(document.hidden?'tab':'blur');
     if(R.paused||!R.base)return;
     var w=window.innerWidth,h=window.innerHeight;
-    if(Math.abs(w-R.base.w)>R.base.w*0.12||Math.abs(h-R.base.h)>R.base.h*0.15){violation('resize');R.base={w:w,h:h};return}
+    var ae=document.activeElement,typing=ae&&(ae.tagName==='TEXTAREA'||ae.tagName==='INPUT'),touch='ontouchstart' in window||navigator.maxTouchPoints>0;
+    if(Math.abs(w-R.base.w)>R.base.w*0.12||(!(touch&&typing)&&Math.abs(h-R.base.h)>R.base.h*0.15)){violation('resize');R.base={w:w,h:h};return}
     if(document.fullscreenElement&&(window.outerWidth-w>160||window.outerHeight-h>160))violation('devtools');
   },700);
   window.addEventListener('beforeunload',function(e){
@@ -666,21 +671,34 @@ html{color-scheme:light}
   }
   $('bBack').addEventListener('click',function(){cur=null;S=null;renderDash();show('s-dash')});
 
-  /* ---------- simulasi pelanggaran ---------- */
-  document.querySelector('details.sim').addEventListener('click',function(e){
-    var b=e.target.closest('[data-sim]');if(!b)return;
-    var t=b.dataset.sim;R.last=0;
-    if(t==='fs'){exitFs();setTimeout(function(){if(running()&&!R.paused)violation('fs')},200)}
-    else violation(t);
+  /* ---------- login ---------- */
+  function enterApp(p){
+    USER={name:p.name,nis:p.nis,kelas:p.kelas,sekolah:SEKOLAH};DB=loadDB();
+    try{sessionStorage.setItem('cbt-sesi',p.nis)}catch(e){}
+    $('dSchool').textContent=SEKOLAH;
+    $('dAv').textContent=initials(p.name);$('pAv').textContent=initials(p.name);
+    $('dUser').textContent=p.name;$('pName').textContent=p.name;
+    $('pNis').textContent='NIS '+p.nis;$('pKelas').textContent=p.kelas;$('pSek').textContent=SEKOLAH;
+    $('dHello').textContent='Halo, '+p.name.split(' ')[0];
+    renderDash();show('s-dash');
+  }
+  $('f-login').addEventListener('submit',function(e){
+    e.preventDefault();
+    var nis=$('in-nis').value.trim(),pw=$('in-pass').value;
+    var p=PESERTA.filter(function(x){return x.nis===nis&&x.pass===pw})[0];
+    if(!p){$('lErr').textContent='NIS atau kata sandi salah.';return}
+    $('lErr').textContent='';$('in-pass').value='';enterApp(p);
+  });
+  $('bLogout').addEventListener('click',function(){
+    USER=null;cur=null;S=null;try{sessionStorage.removeItem('cbt-sesi')}catch(e){}
+    show('s-login');
   });
 
   /* ---------- awal ---------- */
-  $('dSchool').textContent=USER.sekolah;
-  $('dAv').textContent=initials(USER.name);$('pAv').textContent=initials(USER.name);
-  $('dUser').textContent=USER.name;$('pName').textContent=USER.name;
-  $('pNis').textContent='NIS '+USER.nis;$('pKelas').textContent=USER.kelas;$('pSek').textContent=USER.sekolah;
-  $('dHello').textContent='Halo, '+USER.name.split(' ')[0];
-  paintDate();renderDash();show('s-dash');
+  $('lSchool').textContent=SEKOLAH;paintDate();
+  var sesi=null;try{sesi=sessionStorage.getItem('cbt-sesi')}catch(e){}
+  var lama=PESERTA.filter(function(x){return x.nis===sesi})[0];
+  if(lama)enterApp(lama);else show('s-login');
 })();
 </script>
 
